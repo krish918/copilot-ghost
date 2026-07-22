@@ -100,7 +100,7 @@ copilot-ghost keeps all `__` commands in the **same Copilot session** so the
 agent retains context across invocations.
 
 - The session id is stored in `~/.copilot/one-off-sessionid`.
-- The session is valid for **5 days** from the last time the file was written.
+- The session is valid for **7 days** from the last time the file was written.
 - After 5 days the wrapper automatically rotates to a fresh session id.
 - Every `__` call within that window resumes the same session — no matter which
   directory you run it from.
@@ -113,7 +113,7 @@ variable near the top:
 ```bash
 # Number of days a one-off session is kept before a new one starts automatically.
 # Increase this to preserve context longer; set to 0 to always start a fresh session.
-SESSION_LIFETIME_DAYS=5
+SESSION_LIFETIME_DAYS=7
 ```
 
 Examples:

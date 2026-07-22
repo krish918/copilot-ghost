@@ -3,7 +3,7 @@
 SESSION_ID_FILE="$HOME/.copilot/one-off-sessionid"
 # Number of days a one-off session is kept before a new one starts automatically.
 # Increase this to preserve context longer; set to 0 to always start a fresh session.
-SESSION_LIFETIME_DAYS=5
+SESSION_LIFETIME_DAYS=7
 SESSION_LIFETIME_SECONDS=$((SESSION_LIFETIME_DAYS * 24 * 60 * 60))
 is_supported_model() {
     case "$1" in
