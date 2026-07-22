@@ -2,8 +2,6 @@
 
 **copilot-ghost** is a lightweight shell wrapper for [GitHub Copilot CLI](https://githubnext.com/projects/copilot-cli) that gives you a persistent, named session reachable from any directory via the short `__` alias.
 
-It installs itself into `~/.copilot`, wires up the `__` function in your shell rc files, and boots a session id that all future `__` invocations share — so Copilot remembers context across commands.
-
 ---
 
 > [!CAUTION]
@@ -11,11 +9,16 @@ It installs itself into `~/.copilot`, wires up the `__` function in your shell r
 > has unrestricted access to your file system and can execute commands without
 > asking for confirmation. Avoid using it for tasks that require human
 > supervision, interactive approval, or any action you would not want run
-> automatically — such as destructive file operations, pushes to remote
-> repositories, or network requests to external services. Always review what
-> you are asking the agent to do before invoking `__`.
+> automatically.
 
 ---
+
+
+## Requirements
+
+- [GitHub Copilot CLI](https://githubnext.com/projects/copilot-cli) (`copilot` on `$PATH`)
+- `uuid` command (`apt install uuid` / `brew install ossp-uuid`)
+- bash or zsh
 
 ## Quick start
 
@@ -27,7 +30,7 @@ cd copilot-ghost
 
 The installer reloads `~/.bashrc` automatically. If you use zsh, run `source ~/.zshrc` once in your open zsh session.
 
-Run your first command:
+Run your first command on your shell:
 
 ```bash
 __ give the largest file in my current directory which is not owned by me
@@ -73,7 +76,7 @@ To change the default model permanently:
 __ --set-model claude-sonnet-4.6
 ```
 
-Supported models:
+Example models and their IDs to be used in your commands:
 
 | Model | ID |
 |---|---|
@@ -114,7 +117,7 @@ DEFAULT_MODEL=gpt-5-mini
 SESSION_LIFETIME_DAYS=7
 ```
 
-### Subcommands
+### Configuring from command line
 
 | Command | Effect |
 |---|---|
@@ -161,40 +164,6 @@ Or edit `~/.copilot/copilot-ghost.conf` directly and change:
 ```ini
 SESSION_LIFETIME_DAYS=7
 ```
-
-### Force a new session immediately
-
-Delete the session id file:
-
-```bash
-rm ~/.copilot/one-off-sessionid
-```
-
-The next `__` call will create a fresh session.
-
----
-
-## How it works
-
-`install.sh` does the following steps:
-
-1. Copies `copilot-wrapper.sh` to `~/.copilot/copilot-wrapper.sh`.
-2. Copies `copilot-ghost.conf` to `~/.copilot/copilot-ghost.conf` (skipped if
-   already present, so user customisations are preserved on reinstall).
-3. Appends the `__` function to `~/.bashrc`, `~/.zshrc`, or both — whichever
-   exist — if not already present:
-   ```bash
-   function __(){
-     ~/.copilot/copilot-wrapper.sh "$@"
-   }
-   ```
-4. Sources `~/.bashrc` automatically if it exists so `__` is available
-   immediately in the current bash session. For zsh, a reminder is printed.
-5. Runs `copilot-wrapper.sh` once with a no-op prompt to seed the session id
-   file at `~/.copilot/one-off-sessionid`.
-
-The install is **idempotent** — running it again is safe.
-
 ---
 
 ## Files
@@ -206,9 +175,3 @@ The install is **idempotent** — running it again is safe.
 | `install.sh` | One-time installer |
 
 ---
-
-## Requirements
-
-- [GitHub Copilot CLI](https://githubnext.com/projects/copilot-cli) (`copilot` on `$PATH`)
-- `uuid` command (`apt install uuid` / `brew install ossp-uuid`)
-- bash or zsh
