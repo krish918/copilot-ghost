@@ -8,22 +8,9 @@ SESSION_ID_FILE="$COPILOT_DIR/one-off-sessionid"
 DEFAULT_MODEL="gpt-5-mini"
 SESSION_LIFETIME_DAYS=7
 
-# Load config file if present — supports KEY=VALUE lines; ignores comments and blanks
-load_config() {
-    [ -f "$CONFIG_FILE" ] || return 0
-    while IFS='=' read -r key value; do
-        # Strip leading/trailing whitespace and skip comments/blank lines
-        key="${key#"${key%%[![:space:]]*}"}"
-        key="${key%"${key##*[![:space:]]}"}"
-        value="${value#"${value%%[![:space:]]*}"}"
-        value="${value%"${value##*[![:space:]]}"}"
-        case "$key" in
-            '#'*|'') continue ;;
-            DEFAULT_MODEL)        DEFAULT_MODEL="$value" ;;
-            SESSION_LIFETIME_DAYS) SESSION_LIFETIME_DAYS="$value" ;;
-        esac
-    done < "$CONFIG_FILE"
-}
+# Load config — plain KEY=VALUE file, sourced directly
+# shellcheck disable=SC1090
+[ -f "$CONFIG_FILE" ] && . "$CONFIG_FILE"
 
 is_supported_model() {
     case "$1" in
@@ -54,7 +41,6 @@ set_config_value() {
     echo "Set ${key}=${value} in $CONFIG_FILE"
 }
 
-load_config
 SESSION_LIFETIME_SECONDS=$((SESSION_LIFETIME_DAYS * 24 * 60 * 60))
 
 # Handle subcommands before treating args as a prompt
