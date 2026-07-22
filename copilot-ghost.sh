@@ -1,8 +1,8 @@
 #!/bin/bash
 
-COPILOT_DIR="$HOME/.copilot"
-CONFIG_FILE="$COPILOT_DIR/copilot-ghost/copilot-ghost.conf"
-SESSION_ID_FILE="$COPILOT_DIR/one-off-sessionid"
+CP_GHOST_DIR="$HOME/.copilot/.copilotghost"
+CONFIG_FILE="$CP_GHOST_DIR/copilot-ghost.conf"
+SESSION_ID_FILE="$CP_GHOST_DIR/copilot-ghost-sessionid"
 
 # Built-in defaults (used when config file is absent or a key is missing)
 DEFAULT_MODEL="claude-haiku-4.5"

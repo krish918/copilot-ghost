@@ -3,14 +3,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR="$HOME/.copilot"
-GHOST_DIR="$TARGET_DIR/copilot-ghost"
+GHOST_DIR="$TARGET_DIR/.copilotghost"
 WRAPPER_SOURCE="$SCRIPT_DIR/copilot-ghost.sh"
 WRAPPER_TARGET="$GHOST_DIR/copilot-ghost.sh"
 CONFIG_SOURCE="$SCRIPT_DIR/copilot-ghost.conf"
 CONFIG_TARGET="$GHOST_DIR/copilot-ghost.conf"
-SESSION_FILE="$TARGET_DIR/one-off-sessionid"
+SESSION_FILE="$GHOST_DIR/copilot-ghost-sessionid"
 HOOK_BLOCK='function __(){
-  ~/.copilot/copilot-ghost/copilot-ghost.sh "$@"
+  ~/.copilot/.copilotghost/copilot-ghost.sh "$@"
 }'
 
 copy_wrapper() {
@@ -36,7 +36,7 @@ ensure_hook() {
     return 0
   fi
 
-  if ! grep -Fq '~/.copilot/copilot-ghost/copilot-ghost.sh "$@"' "$rc_file"; then
+  if ! grep -Fq '~/.copilot/.copilotghost/copilot-ghost.sh "$@"' "$rc_file"; then
     printf '\n%s\n' "$HOOK_BLOCK" >> "$rc_file"
   fi
 }
