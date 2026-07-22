@@ -1,0 +1,149 @@
+# copilot-ghost
+
+**copilot-ghost** is a lightweight shell wrapper for [GitHub Copilot CLI](https://githubnext.com/projects/copilot-cli) that gives you a persistent, named session reachable from any directory via the short `__` alias.
+
+It installs itself into `~/.copilot`, wires up the `__` function in your shell rc files, and boots a session id that all future `__` invocations share — so Copilot remembers context across commands.
+
+---
+
+## Quick start
+
+```bash
+git clone https://github.com/krish918/copilot-ghost.git
+cd copilot-ghost
+./install.sh
+```
+
+Reload your shell:
+
+```bash
+source ~/.bashrc   # bash
+source ~/.zshrc    # zsh
+```
+
+Run your first command:
+
+```bash
+__ "What files are in my current directory?"
+```
+
+---
+
+## Usage
+
+```bash
+__ "<prompt>"
+```
+
+### Choose a model
+
+Pass a model name as the first argument. When omitted, the default model
+`claude-sonnet-4.6` is used.
+
+```bash
+__ "Fix the bug in main.go"                          # default: claude-sonnet-4.6
+__ claude-sonnet-4.6 "Fix the bug in main.go"        # explicit default
+__ gpt-5-mini "Summarize this repo"                  # faster/cheaper model
+__ claude-opus-4.8 "Refactor the entire auth module" # most capable model
+```
+
+Supported models:
+
+| Model | ID |
+|---|---|
+| Claude Opus 4.8 | `claude-opus-4.8` |
+| Claude Opus 4.7 | `claude-opus-4.7` |
+| Claude Opus 4.6 | `claude-opus-4.6` |
+| Claude Opus 4.5 | `claude-opus-4.5` |
+| Claude Sonnet 4.6 *(default)* | `claude-sonnet-4.6` |
+| Claude Sonnet 4.5 | `claude-sonnet-4.5` |
+| Claude Haiku 4.5 | `claude-haiku-4.5` |
+| GPT-5.5 | `gpt-5.5` |
+| GPT-5.4 | `gpt-5.4` |
+| GPT-5.3 Codex | `gpt-5.3-codex` |
+| GPT-5.4 mini | `gpt-5.4-mini` |
+| GPT-5 mini | `gpt-5-mini` |
+| Gemini 3.1 Pro Preview | `gemini-3.1-pro-preview` |
+| Gemini 3.5 Flash | `gemini-3.5-flash` |
+
+### Resume interactive mode
+
+```bash
+__ --resume   # or: __ -r
+```
+
+---
+
+## Session persistence
+
+copilot-ghost keeps all `__` commands in the **same Copilot session** so the
+agent retains context across invocations.
+
+- The session id is stored in `~/.copilot/one-off-sessionid`.
+- The session is valid for **5 days** from the last time the file was written.
+- After 5 days the wrapper automatically rotates to a fresh session id.
+- Every `__` call within that window resumes the same session — no matter which
+  directory you run it from.
+
+### Changing the session lifetime
+
+Open `~/.copilot/copilot-wrapper.sh` and edit the `FIVE_DAYS_SECONDS` line near
+the top:
+
+```bash
+FIVE_DAYS_SECONDS=$((5 * 24 * 60 * 60))   # 5 days — change this
+```
+
+Examples:
+
+```bash
+FIVE_DAYS_SECONDS=$((1 * 24 * 60 * 60))   # 1 day
+FIVE_DAYS_SECONDS=$((14 * 24 * 60 * 60))  # 2 weeks
+FIVE_DAYS_SECONDS=0                        # always start a new session
+```
+
+### Force a new session immediately
+
+Delete the session id file:
+
+```bash
+rm ~/.copilot/one-off-sessionid
+```
+
+The next `__` call will create a fresh session.
+
+---
+
+## How it works
+
+`install.sh` does the following steps:
+
+1. Copies `copilot-wrapper.sh` to `~/.copilot/copilot-wrapper.sh`.
+2. Appends the `__` function to `~/.bashrc`, `~/.zshrc`, or both — whichever
+   exist — if not already present:
+   ```bash
+   function __(){
+     ~/.copilot/copilot-wrapper.sh "$@"
+   }
+   ```
+3. Runs `copilot-wrapper.sh` once with a no-op prompt to seed the session id
+   file at `~/.copilot/one-off-sessionid`.
+
+The install is **idempotent** — running it again is safe.
+
+---
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `copilot-wrapper.sh` | Core wrapper — model selection, session rotation, copilot invocation |
+| `install.sh` | One-time installer |
+
+---
+
+## Requirements
+
+- [GitHub Copilot CLI](https://githubnext.com/projects/copilot-cli) (`copilot` on `$PATH`)
+- `uuid` command (`apt install uuid` / `brew install ossp-uuid`)
+- bash or zsh
