@@ -158,14 +158,3 @@ __ --set-ttl 14   # 2 weeks
 __ --set-ttl 0    # always start a new session
 ```
 
----
-
-## Files
-
-| File | Purpose |
-|---|---|
-| `copilot-ghost.sh` | Core wrapper — config loading, subcommands, session rotation, copilot invocation |
-| `copilot-ghost.conf` | Default configuration |
-| `install.sh` | One-time installer |
-
----
