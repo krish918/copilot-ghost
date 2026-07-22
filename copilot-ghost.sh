@@ -1,7 +1,7 @@
 #!/bin/bash
 
 COPILOT_DIR="$HOME/.copilot"
-CONFIG_FILE="$COPILOT_DIR/copilot-ghost.conf"
+CONFIG_FILE="$COPILOT_DIR/copilot-ghost/copilot-ghost.conf"
 SESSION_ID_FILE="$COPILOT_DIR/one-off-sessionid"
 
 # Built-in defaults (used when config file is absent or a key is missing)

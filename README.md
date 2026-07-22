@@ -170,7 +170,7 @@ SESSION_LIFETIME_DAYS=7
 
 | File | Purpose |
 |---|---|
-| `copilot-wrapper.sh` | Core wrapper — config loading, subcommands, session rotation, copilot invocation |
+| `copilot-ghost.sh` | Core wrapper — config loading, subcommands, session rotation, copilot invocation |
 | `copilot-ghost.conf` | Default configuration (copied to `~/.copilot/` on install) |
 | `install.sh` | One-time installer |
 
