@@ -63,8 +63,8 @@ Pass a model name as the first argument to override for a single call. The
 persistent default is read from `~/.copilot/copilot-ghost.conf`.
 
 ```bash
-__ "Fix the bug in main.go"                          # uses DEFAULT_MODEL from config
-__ gpt-5-mini "Fix the bug in main.go"               # override for this call only
+__ "Fix the bug in main.go"                          # uses DEFAULT_MODEL from config (claude-haiku-4.5)
+__ claude-haiku-4.5 "Fix the bug in main.go"         # explicit default
 __ claude-haiku-4.5 "Fix the bug in main.go"         # fast Claude model
 __ claude-sonnet-4.6 "Fix the bug in main.go"        # smarter model
 __ claude-opus-4.8 "Refactor the entire auth module" # most capable model
@@ -86,12 +86,12 @@ Example models and their IDs to be used in your commands:
 | Claude Opus 4.5 | `claude-opus-4.5` |
 | Claude Sonnet 4.6 | `claude-sonnet-4.6` |
 | Claude Sonnet 4.5 | `claude-sonnet-4.5` |
-| Claude Haiku 4.5 | `claude-haiku-4.5` |
+| Claude Haiku 4.5 *(default)* | `claude-haiku-4.5` |
 | GPT-5.5 | `gpt-5.5` |
 | GPT-5.4 | `gpt-5.4` |
 | GPT-5.3 Codex | `gpt-5.3-codex` |
 | GPT-5.4 mini | `gpt-5.4-mini` |
-| GPT-5 mini *(default)* | `gpt-5-mini` |
+| GPT-5 mini | `gpt-5-mini` |
 | Gemini 3.1 Pro Preview | `gemini-3.1-pro-preview` |
 | Gemini 3.5 Flash | `gemini-3.5-flash` |
 

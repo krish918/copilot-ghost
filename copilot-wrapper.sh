@@ -5,7 +5,7 @@ CONFIG_FILE="$COPILOT_DIR/copilot-ghost.conf"
 SESSION_ID_FILE="$COPILOT_DIR/one-off-sessionid"
 
 # Built-in defaults (used when config file is absent or a key is missing)
-DEFAULT_MODEL="gpt-5-mini"
+DEFAULT_MODEL="claude-haiku-4.5"
 SESSION_LIFETIME_DAYS=7
 
 # Load config — plain KEY=VALUE file, sourced directly
