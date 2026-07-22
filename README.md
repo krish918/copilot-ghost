@@ -57,12 +57,13 @@ __ <prompt>
 ### Choose a model
 
 Pass a model name as the first argument. When omitted, the default model
-`claude-sonnet-4.6` is used.
+`claude-haiku-4.5` is used.
 
 ```bash
-__ "Fix the bug in main.go"                          # default: claude-sonnet-4.6
-__ claude-sonnet-4.6 "Fix the bug in main.go"        # explicit default
-__ gpt-5-mini "Summarize this repo"                  # faster/cheaper model
+__ "Fix the bug in main.go"                          # default: claude-haiku-4.5
+__ claude-haiku-4.5 "Fix the bug in main.go"         # explicit default
+__ claude-sonnet-4.6 "Fix the bug in main.go"        # smarter model
+__ gpt-5-mini "Summarize this repo"                  # alternative fast model
 __ claude-opus-4.8 "Refactor the entire auth module" # most capable model
 ```
 
@@ -74,9 +75,9 @@ Supported models:
 | Claude Opus 4.7 | `claude-opus-4.7` |
 | Claude Opus 4.6 | `claude-opus-4.6` |
 | Claude Opus 4.5 | `claude-opus-4.5` |
-| Claude Sonnet 4.6 *(default)* | `claude-sonnet-4.6` |
+| Claude Sonnet 4.6 | `claude-sonnet-4.6` |
 | Claude Sonnet 4.5 | `claude-sonnet-4.5` |
-| Claude Haiku 4.5 | `claude-haiku-4.5` |
+| Claude Haiku 4.5 *(default)* | `claude-haiku-4.5` |
 | GPT-5.5 | `gpt-5.5` |
 | GPT-5.4 | `gpt-5.4` |
 | GPT-5.3 Codex | `gpt-5.3-codex` |
@@ -106,19 +107,21 @@ agent retains context across invocations.
 
 ### Changing the session lifetime
 
-Open `~/.copilot/copilot-wrapper.sh` and edit the `FIVE_DAYS_SECONDS` line near
-the top:
+Open `~/.copilot/copilot-wrapper.sh` and edit the `SESSION_LIFETIME_DAYS`
+variable near the top:
 
 ```bash
-FIVE_DAYS_SECONDS=$((5 * 24 * 60 * 60))   # 5 days — change this
+# Number of days a one-off session is kept before a new one starts automatically.
+# Increase this to preserve context longer; set to 0 to always start a fresh session.
+SESSION_LIFETIME_DAYS=5
 ```
 
 Examples:
 
 ```bash
-FIVE_DAYS_SECONDS=$((1 * 24 * 60 * 60))   # 1 day
-FIVE_DAYS_SECONDS=$((14 * 24 * 60 * 60))  # 2 weeks
-FIVE_DAYS_SECONDS=0                        # always start a new session
+SESSION_LIFETIME_DAYS=1    # 1 day
+SESSION_LIFETIME_DAYS=14   # 2 weeks
+SESSION_LIFETIME_DAYS=0    # always start a new session
 ```
 
 ### Force a new session immediately

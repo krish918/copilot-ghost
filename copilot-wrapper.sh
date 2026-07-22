@@ -1,7 +1,10 @@
 #!/bin/bash
 
 SESSION_ID_FILE="$HOME/.copilot/one-off-sessionid"
-FIVE_DAYS_SECONDS=$((5 * 24 * 60 * 60))
+# Number of days a one-off session is kept before a new one starts automatically.
+# Increase this to preserve context longer; set to 0 to always start a fresh session.
+SESSION_LIFETIME_DAYS=5
+SESSION_LIFETIME_SECONDS=$((SESSION_LIFETIME_DAYS * 24 * 60 * 60))
 is_supported_model() {
     case "$1" in
         "claude-opus-4.8" | "claude-opus-4.7" | "claude-opus-4.6" | "claude-opus-4.5" | \
@@ -17,7 +20,7 @@ is_supported_model() {
     esac
 }
 
-MODEL="claude-sonnet-4.6"
+MODEL="claude-haiku-4.5"
 PROMPT_START=1
 RESUME=0
 
@@ -40,7 +43,7 @@ elif [ -f "$SESSION_ID_FILE" ]; then
     CURRENT_TIME=$(date +%s)
     FILE_AGE=$((CURRENT_TIME - FILE_MOD_TIME))
     
-    if [ $FILE_AGE -gt $FIVE_DAYS_SECONDS ]; then
+    if [ $FILE_AGE -gt $SESSION_LIFETIME_SECONDS ]; then
         uuid > "$SESSION_ID_FILE"
     fi
 fi
