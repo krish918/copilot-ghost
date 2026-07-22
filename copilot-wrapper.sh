@@ -20,7 +20,7 @@ is_supported_model() {
     esac
 }
 
-MODEL="claude-haiku-4.5"
+MODEL="gpt-5-mini"
 PROMPT_START=1
 RESUME=0
 

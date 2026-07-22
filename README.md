@@ -57,13 +57,13 @@ __ <prompt>
 ### Choose a model
 
 Pass a model name as the first argument. When omitted, the default model
-`claude-haiku-4.5` is used.
+`gpt-5-mini` is used.
 
 ```bash
-__ "Fix the bug in main.go"                          # default: claude-haiku-4.5
-__ claude-haiku-4.5 "Fix the bug in main.go"         # explicit default
+__ "Fix the bug in main.go"                          # default: gpt-5-mini
+__ gpt-5-mini "Fix the bug in main.go"               # explicit default
+__ claude-haiku-4.5 "Fix the bug in main.go"         # fast Claude model
 __ claude-sonnet-4.6 "Fix the bug in main.go"        # smarter model
-__ gpt-5-mini "Summarize this repo"                  # alternative fast model
 __ claude-opus-4.8 "Refactor the entire auth module" # most capable model
 ```
 
@@ -77,12 +77,12 @@ Supported models:
 | Claude Opus 4.5 | `claude-opus-4.5` |
 | Claude Sonnet 4.6 | `claude-sonnet-4.6` |
 | Claude Sonnet 4.5 | `claude-sonnet-4.5` |
-| Claude Haiku 4.5 *(default)* | `claude-haiku-4.5` |
+| Claude Haiku 4.5 | `claude-haiku-4.5` |
 | GPT-5.5 | `gpt-5.5` |
 | GPT-5.4 | `gpt-5.4` |
 | GPT-5.3 Codex | `gpt-5.3-codex` |
 | GPT-5.4 mini | `gpt-5.4-mini` |
-| GPT-5 mini | `gpt-5-mini` |
+| GPT-5 mini *(default)* | `gpt-5-mini` |
 | Gemini 3.1 Pro Preview | `gemini-3.1-pro-preview` |
 | Gemini 3.5 Flash | `gemini-3.5-flash` |
 
