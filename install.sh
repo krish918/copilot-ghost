@@ -3,23 +3,37 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR="$HOME/.copilot"
+GHOST_DIR="$TARGET_DIR/copilot-ghost"
 WRAPPER_SOURCE="$SCRIPT_DIR/copilot-wrapper.sh"
-WRAPPER_TARGET="$TARGET_DIR/copilot-wrapper.sh"
+WRAPPER_TARGET="$GHOST_DIR/copilot-wrapper.sh"
 CONFIG_SOURCE="$SCRIPT_DIR/copilot-ghost.conf"
-CONFIG_TARGET="$TARGET_DIR/copilot-ghost.conf"
+CONFIG_TARGET="$GHOST_DIR/copilot-ghost.conf"
 SESSION_FILE="$TARGET_DIR/one-off-sessionid"
 HOOK_BLOCK='function __(){
-  ~/.copilot/copilot-wrapper.sh "$@"
+  ~/.copilot/copilot-ghost/copilot-wrapper.sh "$@"
 }'
 
 copy_wrapper() {
-  mkdir -p "$TARGET_DIR"
-  cp "$WRAPPER_SOURCE" "$WRAPPER_TARGET"
-  chmod 755 "$WRAPPER_TARGET"
-  # Copy config only if it does not already exist so user customisations are preserved
-  if [ ! -f "$CONFIG_TARGET" ]; then
-    cp "$CONFIG_SOURCE" "$CONFIG_TARGET"
+  mkdir -p "$GHOST_DIR"
+
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete --exclude 'copilot-ghost.conf' "$SCRIPT_DIR/" "$GHOST_DIR/"
+    # copy config only if not present
+    if [ ! -f "$CONFIG_TARGET" ] && [ -f "$CONFIG_SOURCE" ]; then
+      cp "$CONFIG_SOURCE" "$CONFIG_TARGET"
+    fi
+  else
+    # fallback: copy files individually but preserve existing config
+    for f in "$SCRIPT_DIR"/*; do
+      base="$(basename "$f")"
+      if [ "$base" = "copilot-ghost.conf" ] && [ -f "$CONFIG_TARGET" ]; then
+        continue
+      fi
+      cp -a "$f" "$GHOST_DIR/"
+    done
   fi
+
+  chmod 755 "$WRAPPER_TARGET" || true
 }
 
 ensure_hook() {
@@ -33,7 +47,7 @@ ensure_hook() {
     return 0
   fi
 
-  if ! grep -Fq '~/.copilot/copilot-wrapper.sh "$@"' "$rc_file"; then
+  if ! grep -Fq '~/.copilot/copilot-ghost/copilot-wrapper.sh "$@"' "$rc_file"; then
     printf '\n%s\n' "$HOOK_BLOCK" >> "$rc_file"
   fi
 }
@@ -82,6 +96,6 @@ if [ -f "$HOME/.zshrc" ]; then
   printf 'Note: ~/.zshrc was updated — run `source ~/.zshrc` in any open zsh session.\n'
 fi
 
-printf 'Installed wrapper to %s\n' "$WRAPPER_TARGET"
+printf 'Installed copilot-ghost to %s\n' "$GHOST_DIR"
 printf 'Config file at %s\n' "$CONFIG_TARGET"
 printf 'Session id stored in %s\n' "$SESSION_FILE"
