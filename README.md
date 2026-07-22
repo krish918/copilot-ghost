@@ -30,7 +30,7 @@ The installer reloads `~/.bashrc` automatically. If you use zsh, run `source ~/.
 Run your first command:
 
 ```bash
-__ "What files are in my current directory?"
+__ give the largest file in my current directory which is not owned by me
 ```
 
 ---
@@ -38,7 +38,7 @@ __ "What files are in my current directory?"
 ## Usage
 
 ```bash
-__ "<prompt>"
+__ <prompt>
 ```
 
 > [!TIP]
