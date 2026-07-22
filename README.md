@@ -6,6 +6,17 @@ It installs itself into `~/.copilot`, wires up the `__` function in your shell r
 
 ---
 
+> [!CAUTION]
+> **copilot-ghost always runs in privileged mode** (`--allow-all`). The agent
+> has unrestricted access to your file system and can execute commands without
+> asking for confirmation. Avoid using it for tasks that require human
+> supervision, interactive approval, or any action you would not want run
+> automatically — such as destructive file operations, pushes to remote
+> repositories, or network requests to external services. Always review what
+> you are asking the agent to do before invoking `__`.
+
+---
+
 ## Quick start
 
 ```bash
