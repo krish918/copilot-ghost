@@ -16,24 +16,13 @@ HOOK_BLOCK='function __(){
 copy_wrapper() {
   mkdir -p "$GHOST_DIR"
 
-  if command -v rsync >/dev/null 2>&1; then
-    rsync -a --delete --exclude 'copilot-ghost.conf' "$SCRIPT_DIR/" "$GHOST_DIR/"
-    # copy config only if not present
-    if [ ! -f "$CONFIG_TARGET" ] && [ -f "$CONFIG_SOURCE" ]; then
-      cp "$CONFIG_SOURCE" "$CONFIG_TARGET"
-    fi
-  else
-    # fallback: copy files individually but preserve existing config
-    for f in "$SCRIPT_DIR"/*; do
-      base="$(basename "$f")"
-      if [ "$base" = "copilot-ghost.conf" ] && [ -f "$CONFIG_TARGET" ]; then
-        continue
-      fi
-      cp -a "$f" "$GHOST_DIR/"
-    done
-  fi
-
+  # Copy only the wrapper and the config (preserve existing config)
+  cp -a "$WRAPPER_SOURCE" "$WRAPPER_TARGET"
   chmod 755 "$WRAPPER_TARGET" || true
+
+  if [ -f "$CONFIG_SOURCE" ] && [ ! -f "$CONFIG_TARGET" ]; then
+    cp -a "$CONFIG_SOURCE" "$CONFIG_TARGET"
+  fi
 }
 
 ensure_hook() {
@@ -58,11 +47,13 @@ create_session() {
     exit 1
   fi
 
-  "$WRAPPER_TARGET" "do nothing" >/dev/null
 
   if [ ! -s "$SESSION_FILE" ]; then
-    echo "session id file was not created: $SESSION_FILE" >&2
-    exit 1
+    "$WRAPPER_TARGET" "do nothing" >/dev/null
+    if [ ! -s "$SESSION_FILE" ]; then
+      echo "session id file was not created: $SESSION_FILE" >&2
+      exit 1
+    fi
   fi
 }
 
@@ -88,14 +79,14 @@ create_session
 # Reload shell configuration where possible so __ is immediately available
 if [ -f "$HOME/.bashrc" ]; then
   # shellcheck disable=SC1090
-  . "$HOME/.bashrc"
+  . "$HOME/.bashrc" 2>/dev/null || true
   printf 'Reloaded ~/.bashrc\n'
 fi
 
 if [ -f "$HOME/.zshrc" ]; then
-  printf 'Note: ~/.zshrc was updated — run `source ~/.zshrc` in any open zsh session.\n'
+  printf '.zshrc was updated. Please source .zshrc file manually!\n'
 fi
 
-printf 'Installed copilot-ghost to %s\n' "$GHOST_DIR"
+printf '\nInstalled copilot-ghost to %s\n' "$GHOST_DIR"
 printf 'Config file at %s\n' "$CONFIG_TARGET"
 printf 'Session id stored in %s\n' "$SESSION_FILE"
