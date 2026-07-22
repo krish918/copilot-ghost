@@ -63,12 +63,18 @@ if [ "$rc_updated" -eq 0 ]; then
   ensure_hook "$HOME/.bashrc"
 fi
 
-if [ -n "${BASH_VERSION:-}" ] && [ -f "$HOME/.bashrc" ]; then
+create_session
+
+# Reload shell configuration where possible so __ is immediately available
+if [ -f "$HOME/.bashrc" ]; then
   # shellcheck disable=SC1090
   . "$HOME/.bashrc"
+  printf 'Reloaded ~/.bashrc\n'
 fi
 
-create_session
+if [ -f "$HOME/.zshrc" ]; then
+  printf 'Note: ~/.zshrc was updated — run `source ~/.zshrc` in any open zsh session.\n'
+fi
 
 printf 'Installed wrapper to %s\n' "$WRAPPER_TARGET"
 printf 'Session id stored in %s\n' "$SESSION_FILE"

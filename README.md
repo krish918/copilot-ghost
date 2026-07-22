@@ -25,12 +25,7 @@ cd copilot-ghost
 ./install.sh
 ```
 
-Reload your shell:
-
-```bash
-source ~/.bashrc   # bash
-source ~/.zshrc    # zsh
-```
+The installer reloads `~/.bashrc` automatically. If you use zsh, run `source ~/.zshrc` once in your open zsh session.
 
 Run your first command:
 
@@ -45,6 +40,19 @@ __ "What files are in my current directory?"
 ```bash
 __ "<prompt>"
 ```
+
+> [!TIP]
+> **Always quote your prompt** or escape special characters. Shell metacharacters
+> like `!`, `$`, `&`, `|`, `>`, `<`, `;`, `(`, `)`, `` ` ``, and `\` can be
+> interpreted by the shell before the wrapper receives them. Use single quotes to
+> pass a prompt literally, or double quotes with `\` escaping where needed:
+>
+> ```bash
+> __ 'Why does $HOME expand to nothing?'          # single quotes: literal
+> __ "List files ending in *.go"                  # double quotes: safe for most cases
+> __ "What does \`git status\` show?"             # escape backticks in double quotes
+> __ 'Run: echo "hello & goodbye"'                # single quotes handle & and "
+> ```
 
 ### Choose a model
 
@@ -137,7 +145,9 @@ The next `__` call will create a fresh session.
      ~/.copilot/copilot-wrapper.sh "$@"
    }
    ```
-3. Runs `copilot-wrapper.sh` once with a no-op prompt to seed the session id
+3. Sources `~/.bashrc` automatically if it exists so `__` is available
+   immediately in the current bash session. For zsh, a reminder is printed.
+4. Runs `copilot-wrapper.sh` once with a no-op prompt to seed the session id
    file at `~/.copilot/one-off-sessionid`.
 
 The install is **idempotent** — running it again is safe.
