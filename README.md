@@ -56,15 +56,21 @@ __ <prompt>
 
 ### Choose a model
 
-Pass a model name as the first argument. When omitted, the default model
-`gpt-5-mini` is used.
+Pass a model name as the first argument to override for a single call. The
+persistent default is read from `~/.copilot/copilot-ghost.conf`.
 
 ```bash
-__ "Fix the bug in main.go"                          # default: gpt-5-mini
-__ gpt-5-mini "Fix the bug in main.go"               # explicit default
+__ "Fix the bug in main.go"                          # uses DEFAULT_MODEL from config
+__ gpt-5-mini "Fix the bug in main.go"               # override for this call only
 __ claude-haiku-4.5 "Fix the bug in main.go"         # fast Claude model
 __ claude-sonnet-4.6 "Fix the bug in main.go"        # smarter model
 __ claude-opus-4.8 "Refactor the entire auth module" # most capable model
+```
+
+To change the default model permanently:
+
+```bash
+__ --set-model claude-sonnet-4.6
 ```
 
 Supported models:
@@ -94,34 +100,66 @@ __ --resume   # or: __ -r
 
 ---
 
+## Configuration
+
+copilot-ghost reads its settings from `~/.copilot/copilot-ghost.conf`, a plain
+`KEY=VALUE` file installed alongside the wrapper. Edit it directly or use the
+built-in subcommands.
+
+```ini
+# Default model used when no model is given as the first argument.
+DEFAULT_MODEL=gpt-5-mini
+
+# Number of days a one-off session is preserved before a new one starts.
+SESSION_LIFETIME_DAYS=7
+```
+
+### Subcommands
+
+| Command | Effect |
+|---|---|
+| `__ --set-model <model-id>` | Update `DEFAULT_MODEL` in the config file |
+| `__ --set-ttl <days>` | Update `SESSION_LIFETIME_DAYS` in the config file |
+| `__ --config` | Print the current config file path and contents |
+
+Examples:
+
+```bash
+__ --set-model claude-sonnet-4.6   # switch default to Sonnet
+__ --set-model gpt-5-mini          # switch back to GPT-5 mini
+__ --set-ttl 14                    # keep session for 2 weeks
+__ --set-ttl 0                     # always start a fresh session
+__ --config                        # inspect current settings
+```
+
+---
+
 ## Session persistence
 
 copilot-ghost keeps all `__` commands in the **same Copilot session** so the
 agent retains context across invocations.
 
 - The session id is stored in `~/.copilot/one-off-sessionid`.
-- The session is valid for **7 days** from the last time the file was written.
-- After 5 days the wrapper automatically rotates to a fresh session id.
+- The session is valid for **`SESSION_LIFETIME_DAYS`** days (default: 7) from the last time the file was written.
+- After that window the wrapper automatically rotates to a fresh session id.
 - Every `__` call within that window resumes the same session — no matter which
   directory you run it from.
 
 ### Changing the session lifetime
 
-Open `~/.copilot/copilot-wrapper.sh` and edit the `SESSION_LIFETIME_DAYS`
-variable near the top:
+Use the subcommand (updates `~/.copilot/copilot-ghost.conf` immediately):
 
 ```bash
-# Number of days a one-off session is kept before a new one starts automatically.
-# Increase this to preserve context longer; set to 0 to always start a fresh session.
-SESSION_LIFETIME_DAYS=7
+__ --set-ttl 7    # 7 days (default)
+__ --set-ttl 1    # 1 day
+__ --set-ttl 14   # 2 weeks
+__ --set-ttl 0    # always start a new session
 ```
 
-Examples:
+Or edit `~/.copilot/copilot-ghost.conf` directly and change:
 
-```bash
-SESSION_LIFETIME_DAYS=1    # 1 day
-SESSION_LIFETIME_DAYS=14   # 2 weeks
-SESSION_LIFETIME_DAYS=0    # always start a new session
+```ini
+SESSION_LIFETIME_DAYS=7
 ```
 
 ### Force a new session immediately
@@ -141,16 +179,18 @@ The next `__` call will create a fresh session.
 `install.sh` does the following steps:
 
 1. Copies `copilot-wrapper.sh` to `~/.copilot/copilot-wrapper.sh`.
-2. Appends the `__` function to `~/.bashrc`, `~/.zshrc`, or both — whichever
+2. Copies `copilot-ghost.conf` to `~/.copilot/copilot-ghost.conf` (skipped if
+   already present, so user customisations are preserved on reinstall).
+3. Appends the `__` function to `~/.bashrc`, `~/.zshrc`, or both — whichever
    exist — if not already present:
    ```bash
    function __(){
      ~/.copilot/copilot-wrapper.sh "$@"
    }
    ```
-3. Sources `~/.bashrc` automatically if it exists so `__` is available
+4. Sources `~/.bashrc` automatically if it exists so `__` is available
    immediately in the current bash session. For zsh, a reminder is printed.
-4. Runs `copilot-wrapper.sh` once with a no-op prompt to seed the session id
+5. Runs `copilot-wrapper.sh` once with a no-op prompt to seed the session id
    file at `~/.copilot/one-off-sessionid`.
 
 The install is **idempotent** — running it again is safe.
@@ -161,7 +201,8 @@ The install is **idempotent** — running it again is safe.
 
 | File | Purpose |
 |---|---|
-| `copilot-wrapper.sh` | Core wrapper — model selection, session rotation, copilot invocation |
+| `copilot-wrapper.sh` | Core wrapper — config loading, subcommands, session rotation, copilot invocation |
+| `copilot-ghost.conf` | Default configuration (copied to `~/.copilot/` on install) |
 | `install.sh` | One-time installer |
 
 ---

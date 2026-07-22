@@ -5,6 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR="$HOME/.copilot"
 WRAPPER_SOURCE="$SCRIPT_DIR/copilot-wrapper.sh"
 WRAPPER_TARGET="$TARGET_DIR/copilot-wrapper.sh"
+CONFIG_SOURCE="$SCRIPT_DIR/copilot-ghost.conf"
+CONFIG_TARGET="$TARGET_DIR/copilot-ghost.conf"
 SESSION_FILE="$TARGET_DIR/one-off-sessionid"
 HOOK_BLOCK='function __(){
   ~/.copilot/copilot-wrapper.sh "$@"
@@ -14,6 +16,10 @@ copy_wrapper() {
   mkdir -p "$TARGET_DIR"
   cp "$WRAPPER_SOURCE" "$WRAPPER_TARGET"
   chmod 755 "$WRAPPER_TARGET"
+  # Copy config only if it does not already exist so user customisations are preserved
+  if [ ! -f "$CONFIG_TARGET" ]; then
+    cp "$CONFIG_SOURCE" "$CONFIG_TARGET"
+  fi
 }
 
 ensure_hook() {
@@ -77,4 +83,5 @@ if [ -f "$HOME/.zshrc" ]; then
 fi
 
 printf 'Installed wrapper to %s\n' "$WRAPPER_TARGET"
+printf 'Config file at %s\n' "$CONFIG_TARGET"
 printf 'Session id stored in %s\n' "$SESSION_FILE"

@@ -1,10 +1,30 @@
 #!/bin/bash
 
-SESSION_ID_FILE="$HOME/.copilot/one-off-sessionid"
-# Number of days a one-off session is kept before a new one starts automatically.
-# Increase this to preserve context longer; set to 0 to always start a fresh session.
+COPILOT_DIR="$HOME/.copilot"
+CONFIG_FILE="$COPILOT_DIR/copilot-ghost.conf"
+SESSION_ID_FILE="$COPILOT_DIR/one-off-sessionid"
+
+# Built-in defaults (used when config file is absent or a key is missing)
+DEFAULT_MODEL="gpt-5-mini"
 SESSION_LIFETIME_DAYS=7
-SESSION_LIFETIME_SECONDS=$((SESSION_LIFETIME_DAYS * 24 * 60 * 60))
+
+# Load config file if present — supports KEY=VALUE lines; ignores comments and blanks
+load_config() {
+    [ -f "$CONFIG_FILE" ] || return 0
+    while IFS='=' read -r key value; do
+        # Strip leading/trailing whitespace and skip comments/blank lines
+        key="${key#"${key%%[![:space:]]*}"}"
+        key="${key%"${key##*[![:space:]]}"}"
+        value="${value#"${value%%[![:space:]]*}"}"
+        value="${value%"${value##*[![:space:]]}"}"
+        case "$key" in
+            '#'*|'') continue ;;
+            DEFAULT_MODEL)        DEFAULT_MODEL="$value" ;;
+            SESSION_LIFETIME_DAYS) SESSION_LIFETIME_DAYS="$value" ;;
+        esac
+    done < "$CONFIG_FILE"
+}
+
 is_supported_model() {
     case "$1" in
         "claude-opus-4.8" | "claude-opus-4.7" | "claude-opus-4.6" | "claude-opus-4.5" | \
@@ -20,11 +40,54 @@ is_supported_model() {
     esac
 }
 
-MODEL="gpt-5-mini"
+set_config_value() {
+    local key="$1" value="$2"
+    if [ ! -f "$CONFIG_FILE" ]; then
+        echo "Config file not found: $CONFIG_FILE" >&2
+        exit 1
+    fi
+    # Replace the value in-place (works on both GNU and BSD sed via tmp file)
+    local tmp
+    tmp="$(mktemp)"
+    sed "s|^[[:space:]]*${key}[[:space:]]*=.*|${key}=${value}|" "$CONFIG_FILE" > "$tmp"
+    mv "$tmp" "$CONFIG_FILE"
+    echo "Set ${key}=${value} in $CONFIG_FILE"
+}
+
+load_config
+SESSION_LIFETIME_SECONDS=$((SESSION_LIFETIME_DAYS * 24 * 60 * 60))
+
+# Handle subcommands before treating args as a prompt
+case "${1:-}" in
+    --set-model)
+        if [ -z "${2:-}" ]; then
+            echo "Usage: __ --set-model <model-id>" >&2; exit 1
+        fi
+        if ! is_supported_model "$2"; then
+            echo "Unsupported model: $2" >&2; exit 1
+        fi
+        set_config_value "DEFAULT_MODEL" "$2"
+        exit 0
+        ;;
+    --set-ttl)
+        if [ -z "${2:-}" ] || ! printf '%s' "$2" | grep -qE '^[0-9]+$'; then
+            echo "Usage: __ --set-ttl <days>" >&2; exit 1
+        fi
+        set_config_value "SESSION_LIFETIME_DAYS" "$2"
+        exit 0
+        ;;
+    --config)
+        echo "Config file: $CONFIG_FILE"
+        cat "$CONFIG_FILE"
+        exit 0
+        ;;
+esac
+
+MODEL="$DEFAULT_MODEL"
 PROMPT_START=1
 RESUME=0
 
-if is_supported_model "$1"; then
+if is_supported_model "${1:-}"; then
     MODEL="$1"
     PROMPT_START=2
 fi
@@ -38,19 +101,18 @@ fi
 
 if [ ! -f "$SESSION_ID_FILE" ]; then
     uuid > "$SESSION_ID_FILE"
-elif [ -f "$SESSION_ID_FILE" ]; then
+else
     FILE_MOD_TIME=$(stat -f%m "$SESSION_ID_FILE" 2>/dev/null || stat -c%Y "$SESSION_ID_FILE" 2>/dev/null)
     CURRENT_TIME=$(date +%s)
     FILE_AGE=$((CURRENT_TIME - FILE_MOD_TIME))
-    
-    if [ $FILE_AGE -gt $SESSION_LIFETIME_SECONDS ]; then
+    if [ "$FILE_AGE" -gt "$SESSION_LIFETIME_SECONDS" ]; then
         uuid > "$SESSION_ID_FILE"
     fi
 fi
 
 SESSION_ID=$(cat "$SESSION_ID_FILE")
 
-if [ $RESUME -eq 1 ]; then
+if [ "$RESUME" -eq 1 ]; then
     copilot --allow-all --add-dir "$(pwd)" --model "$MODEL" --session-id="$SESSION_ID"
 else
     copilot --allow-all --add-dir "$(pwd)" --model "$MODEL" --session-id="$SESSION_ID" --prompt "$PROMPT"
